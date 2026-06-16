@@ -6,6 +6,13 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/Dialog";
+import {
   Users,
   Clock,
   Plane,
@@ -20,6 +27,10 @@ export function TeamDirectory() {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { employees, leaveRequests } = useHrmsData();
+
+  const [isTeamModalOpen, setIsTeamModalOpen] = React.useState(false);
+  const [isClockedInModalOpen, setIsClockedInModalOpen] = React.useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = React.useState(false);
 
   if (!currentUser) return null;
 
@@ -59,7 +70,10 @@ export function TeamDirectory() {
 
       {/* Summary Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card className="border-l-4 border-l-primary shadow-sm">
+        <Card 
+          className="border-l-4 border-l-primary hover:translate-y-[-2px] hover:border-primary/60 transition-all cursor-pointer shadow-sm hover:shadow-md"
+          onClick={() => setIsTeamModalOpen(true)}
+        >
           <CardContent className="pt-6">
             <span className="text-[10px] font-bold text-muted-foreground uppercase font-heading block">Team Size</span>
             <div className="flex items-baseline justify-between mt-1.5">
@@ -71,7 +85,10 @@ export function TeamDirectory() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500 shadow-sm">
+        <Card 
+          className="border-l-4 border-l-emerald-500 hover:translate-y-[-2px] hover:border-emerald-500/60 transition-all cursor-pointer shadow-sm hover:shadow-md"
+          onClick={() => setIsClockedInModalOpen(true)}
+        >
           <CardContent className="pt-6">
             <span className="text-[10px] font-bold text-muted-foreground uppercase font-heading block">Clocked In Today</span>
             <div className="flex items-baseline justify-between mt-1.5">
@@ -83,7 +100,10 @@ export function TeamDirectory() {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-amber-500 shadow-sm">
+        <Card 
+          className="border-l-4 border-l-amber-500 hover:translate-y-[-2px] hover:border-amber-500/60 transition-all cursor-pointer shadow-sm hover:shadow-md"
+          onClick={() => setIsLeaveModalOpen(true)}
+        >
           <CardContent className="pt-6">
             <span className="text-[10px] font-bold text-muted-foreground uppercase font-heading block">Active Leaves Today</span>
             <div className="flex items-baseline justify-between mt-1.5">
@@ -160,6 +180,177 @@ export function TeamDirectory() {
           );
         })}
       </div>
+
+      {/* Team Size Modal */}
+      <Dialog isOpen={isTeamModalOpen} onClose={() => setIsTeamModalOpen(false)}>
+        <DialogHeader>
+          <DialogTitle>{isLeaderOrAdmin ? "Organization Headcount" : "Team Members"}</DialogTitle>
+          <DialogDescription>
+            {isLeaderOrAdmin 
+              ? "All registered employees across organization" 
+              : `Members of the ${currentUser.department || "your"} department`}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1">
+          {teamMembers.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">No employees found</p>
+          ) : (
+            teamMembers.map((member) => {
+              const isOnLeave = leaveEmployeeIds.has(member.id);
+              return (
+                <div key={member.id} className="flex items-center justify-between p-2.5 rounded bg-muted/40 text-xs border border-border/40 hover:bg-muted/60 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <img
+                      src={member.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${member.email}`}
+                      alt={member.name}
+                      className="h-8 w-8 rounded-full object-cover shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground truncate">{member.name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        {member.designation} • {member.department}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <Badge variant={isOnLeave ? "warning" : "success"} className="text-[9px] py-0.5 px-1.5 border-0">
+                      {isOnLeave ? "On Leave" : "Clocked In"}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 px-2 text-[10px] font-semibold"
+                      onClick={() => {
+                        setIsTeamModalOpen(false);
+                        navigate(`/employees/${member.id}`);
+                      }}
+                    >
+                      View
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setIsTeamModalOpen(false)}>Close Panel</Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Clocked In Today Modal */}
+      <Dialog isOpen={isClockedInModalOpen} onClose={() => setIsClockedInModalOpen(false)}>
+        <DialogHeader>
+          <DialogTitle>Clocked In Today</DialogTitle>
+          <DialogDescription>List of active employees currently on duty today</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1">
+          {teamMembers.filter(m => !leaveEmployeeIds.has(m.id)).length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">No clocked in employees today</p>
+          ) : (
+            teamMembers
+              .filter(m => !leaveEmployeeIds.has(m.id))
+              .map((member) => (
+                <div key={member.id} className="flex items-center justify-between p-2.5 rounded bg-muted/40 text-xs border border-border/40 hover:bg-muted/60 transition-colors">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <img
+                      src={member.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${member.email}`}
+                      alt={member.name}
+                      className="h-8 w-8 rounded-full object-cover shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground truncate">{member.name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                        {member.designation} • {member.department}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <Badge variant="success" className="text-[9px] py-0.5 px-1.5 border-0">
+                      09:00 AM
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 px-2 text-[10px] font-semibold"
+                      onClick={() => {
+                        setIsClockedInModalOpen(false);
+                        navigate(`/employees/${member.id}`);
+                      }}
+                    >
+                      View
+                    </Button>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setIsClockedInModalOpen(false)}>Close Panel</Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* Active Leaves Today Modal */}
+      <Dialog isOpen={isLeaveModalOpen} onClose={() => setIsLeaveModalOpen(false)}>
+        <DialogHeader>
+          <DialogTitle>Employees On Leave Today</DialogTitle>
+          <DialogDescription>List of employees with active approved leave requests today</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1">
+          {teamMembers.filter(m => leaveEmployeeIds.has(m.id)).length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">No employees on leave today</p>
+          ) : (
+            teamMembers
+              .filter(m => leaveEmployeeIds.has(m.id))
+              .map((member) => {
+                const memberLeave = leavesToday.find(req => req.employeeId === member.id);
+                const leaveType = memberLeave ? memberLeave.leaveType : "Leave";
+                const duration = memberLeave 
+                  ? (memberLeave.startDate === memberLeave.endDate ? memberLeave.startDate : `${memberLeave.startDate} - ${memberLeave.endDate}`) 
+                  : "Today";
+                return (
+                  <div key={member.id} className="flex items-center justify-between p-2.5 rounded bg-muted/40 text-xs border border-border/40 hover:bg-muted/60 transition-colors">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={member.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${member.email}`}
+                        alt={member.name}
+                        className="h-8 w-8 rounded-full object-cover shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground truncate">{member.name}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                          {member.designation} • {member.department}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <div className="text-right">
+                        <Badge variant="warning" className="text-[9px] py-0.5 px-1.5 border-0">
+                          {leaveType}
+                        </Badge>
+                        <p className="text-[9px] text-muted-foreground mt-0.5 font-medium">{duration}</p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-7 px-2 text-[10px] font-semibold"
+                        onClick={() => {
+                          setIsLeaveModalOpen(false);
+                          navigate(`/employees/${member.id}`);
+                        }}
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setIsLeaveModalOpen(false)}>Close Panel</Button>
+        </DialogFooter>
+      </Dialog>
 
     </div>
   );

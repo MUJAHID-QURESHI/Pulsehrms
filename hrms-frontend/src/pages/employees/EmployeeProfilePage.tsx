@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Dialog, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
+import { api } from "@/utils/api";
 import {
   User,
   Building2,
@@ -27,7 +28,10 @@ import {
   CheckCircle,
   FileCheck2,
   CreditCard,
-  Plus
+  Plus,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 export function EmployeeProfilePage() {
@@ -64,6 +68,50 @@ export function EmployeeProfilePage() {
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [editedPhone, setEditedPhone] = useState(employee?.phone || "");
   const [editedLocation, setEditedLocation] = useState(employee?.location || "");
+
+  // Password change form states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [passError, setPassError] = useState("");
+  const [passSuccess, setPassSuccess] = useState("");
+  const [isPassUpdating, setIsPassUpdating] = useState(false);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassError("");
+    setPassSuccess("");
+
+    if (newPassword.length < 6) {
+      setPassError("New password must be at least 6 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPassError("New passwords do not match.");
+      return;
+    }
+
+    setIsPassUpdating(true);
+    try {
+      await api.put("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
+      setPassSuccess("Password updated successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      console.error("Password update error:", error);
+      setPassError(error instanceof Error ? error.message : "Failed to update password.");
+    } finally {
+      setIsPassUpdating(false);
+    }
+  };
 
   if (!employee) {
     return (
@@ -152,11 +200,14 @@ export function EmployeeProfilePage() {
       {/* Tabs */}
       <Tabs defaultValue="personal" className="w-full">
         
-        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl max-w-2xl">
+        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl max-w-3xl">
           <TabsTrigger value="personal" className="flex items-center gap-1.5 text-xs"><User className="h-4 w-4" /> Personal info</TabsTrigger>
           <TabsTrigger value="bank" className="flex items-center gap-1.5 text-xs"><CreditCard className="h-4 w-4" /> Bank details</TabsTrigger>
           <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs"><FileCheck2 className="h-4 w-4" /> Documents</TabsTrigger>
           <TabsTrigger value="timeline" className="flex items-center gap-1.5 text-xs"><Clock className="h-4 w-4" /> Timeline</TabsTrigger>
+          {isOwnProfile && (
+            <TabsTrigger value="security" className="flex items-center gap-1.5 text-xs"><Lock className="h-4 w-4" /> Security</TabsTrigger>
+          )}
         </TabsList>
 
         {/* Tab 1: Personal info */}
@@ -390,6 +441,78 @@ export function EmployeeProfilePage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Tab 5: Security */}
+        {isOwnProfile && (
+          <TabsContent value="security">
+            <Card className="max-w-md shadow-sm">
+              <CardHeader>
+                <CardTitle>Change Password</CardTitle>
+                <CardDescription>Update your portal login password</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <Input
+                    label="Current Password"
+                    type={showCurrentPass ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPass(!showCurrentPass)}
+                        className="p-1 hover:bg-muted rounded text-muted-foreground focus:outline-none cursor-pointer"
+                      >
+                        {showCurrentPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    }
+                  />
+                  <Input
+                    label="New Password"
+                    type={showNewPass ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPass(!showNewPass)}
+                        className="p-1 hover:bg-muted rounded text-muted-foreground focus:outline-none cursor-pointer"
+                      >
+                        {showNewPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    }
+                  />
+                  <Input
+                    label="Confirm New Password"
+                    type={showConfirmPass ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPass(!showConfirmPass)}
+                        className="p-1 hover:bg-muted rounded text-muted-foreground focus:outline-none cursor-pointer"
+                      >
+                        {showConfirmPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    }
+                  />
+                  {passError && <p className="text-xs font-semibold text-destructive">{passError}</p>}
+                  {passSuccess && <p className="text-xs font-semibold text-emerald-600">{passSuccess}</p>}
+                  <Button type="submit" className="w-full font-semibold" isLoading={isPassUpdating}>
+                    Update Password
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
 
       </Tabs>
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "PulseHRMS MERN Application root runner",
   "scripts": {
-    "install-all": "npm install --prefix hrms-backend && npm install --prefix hrms-frontend",
+    "install-all": "npm install --production=false --prefix hrms-backend && npm install --production=false --prefix hrms-frontend",
     "build": "npm run install-all && npm run build --prefix hrms-frontend",
     "start": "node hrms-backend/app.js",
     "dev": "concurrently \"npm run dev --prefix hrms-backend\" \"npm run dev --prefix hrms-frontend\""

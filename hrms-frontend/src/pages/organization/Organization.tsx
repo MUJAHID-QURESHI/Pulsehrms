@@ -23,32 +23,10 @@ export function Organization() {
     e.designation.toLowerCase().includes("president")
   ) || employees.find(e => e.role === "HR Admin") || employees[0];
 
-  // Find engineering lead (Marcus Sterling by default)
-  const engLead = employees.find(e => 
-    e.department === "Engineering" && 
-    (e.role === "Manager" || e.designation.toLowerCase().includes("manager") || e.designation.toLowerCase().includes("lead"))
-  );
-
-  // Find engineering reportees (like David Vance, and user-registered ones like Mujahid)
-  const engReportees = employees.filter(e => 
-    e.department === "Engineering" && 
-    e.id !== engLead?.id &&
-    e.id !== topLeader?.id
-  );
-
-  // Find HR Director/Admin (Sarah Jenkins or any other HR Admin excluding top leader)
-  const hrDirector = employees.find(e => 
+  // Find level 2 reportees (who report directly to CEO, or have no manager assigned, excluding CEO self)
+  const level2Reportees = employees.filter(e => 
     e.id !== topLeader?.id && 
-    (e.role === "HR Admin" || e.department === "Human Resources")
-  ) || topLeader;
-
-  // Find other department reportees who report directly to CEO
-  const otherReportees = employees.filter(e => 
-    e.id !== topLeader?.id && 
-    e.id !== engLead?.id && 
-    e.id !== hrDirector?.id && 
-    e.department !== "Engineering" &&
-    e.department !== "Human Resources"
+    (e.reportsTo === topLeader?.id || !e.reportsTo || e.reportsTo === "")
   );
 
   // Aggregate department counts for Departments tab
@@ -119,84 +97,51 @@ export function Organization() {
                   </div>
                 )}
 
-                {/* Level 2: Managers / Admin */}
-                <div className="flex justify-center gap-12 mt-4 relative w-full">
-                  
-                  {/* Manager Column */}
-                  {engLead && (
-                    <div className="flex flex-col items-center">
-                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                          {engLead.designation || "Engineering Lead"}
-                        </span>
-                        <h4 className="font-heading font-bold text-sm mt-0.5">{engLead.name}</h4>
-                        <p className="text-[10px] text-muted-foreground">{engLead.department}</p>
-                      </div>
-                      {/* Vertical Connector */}
-                      {engReportees.length > 0 && (
-                        <div className="h-10 w-0.5 bg-border mt-2 relative">
-                          <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
+                {/* Level 2: Direct Reports / Managers */}
+                <div className="flex justify-center gap-12 mt-4 relative w-full flex-wrap">
+                  {level2Reportees.map((manager, idx) => {
+                    const managerReports = employees.filter(e => e.reportsTo === manager.id);
+                    const isEng = manager.department.toLowerCase().includes("eng");
+                    const isHr = manager.department.toLowerCase().includes("hr") || manager.department.toLowerCase().includes("human");
+                    const badgeColor = isEng 
+                      ? "text-emerald-600 dark:text-emerald-400" 
+                      : isHr 
+                        ? "text-amber-600 dark:text-amber-400" 
+                        : "text-indigo-600 dark:text-indigo-400";
+
+                    return (
+                      <div key={manager.id || idx} className="flex flex-col items-center">
+                        <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                          <span className={`text-[9px] font-bold uppercase tracking-wider ${badgeColor}`}>
+                            {manager.designation || "Lead"}
+                          </span>
+                          <h4 className="font-heading font-bold text-sm mt-0.5">{manager.name}</h4>
+                          <p className="text-[10px] text-muted-foreground">{manager.department}</p>
                         </div>
-                      )}
-
-                      {/* Level 3: Engineering Team Reportees */}
-                      {engReportees.length > 0 && (
-                        <div className="flex gap-4 mt-4 justify-center flex-wrap max-w-md">
-                          {engReportees.map((eng, idx) => (
-                            <div key={eng.id || idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
-                              <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
-                                {eng.designation || "Developer"}
-                              </span>
-                              <h5 className="font-heading font-bold text-xs mt-0.5">{eng.name}</h5>
-                              <p className="text-[9px] text-muted-foreground">{eng.department}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* HR Admin Column (Adjacent node) */}
-                  {hrDirector && hrDirector.id !== topLeader?.id && (
-                    <div className="flex flex-col items-center">
-                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                          {hrDirector.designation || "HR Director"}
-                        </span>
-                        <h4 className="font-heading font-bold text-sm mt-0.5">{hrDirector.name}</h4>
-                        <p className="text-[10px] text-muted-foreground">{hrDirector.department}</p>
-                      </div>
-                      <div className="h-6 w-0.5 bg-dashed border-l border-muted-foreground/30 mt-2" />
-                      <span className="text-[9px] text-muted-foreground italic mt-2">Dotted reporting to CEO</span>
-                    </div>
-                  )}
-
-                  {/* Other Departments Column */}
-                  {otherReportees.length > 0 && (
-                    <div className="flex flex-col items-center">
-                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Other Personnel</span>
-                        <h4 className="font-heading font-bold text-sm mt-0.5">Direct Reports</h4>
-                        <p className="text-[10px] text-muted-foreground">General Operations</p>
-                      </div>
-                      {/* Vertical Connector */}
-                      <div className="h-10 w-0.5 bg-border mt-2 relative">
-                        <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
-                      </div>
-                      <div className="flex gap-4 mt-4 justify-center flex-wrap max-w-md">
-                        {otherReportees.map((emp, idx) => (
-                          <div key={emp.id || idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
-                            <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
-                              {emp.designation}
-                            </span>
-                            <h5 className="font-heading font-bold text-xs mt-0.5">{emp.name}</h5>
-                            <p className="text-[9px] text-muted-foreground">{emp.department}</p>
+                        {/* Vertical Connector */}
+                        {managerReports.length > 0 && (
+                          <div className="h-10 w-0.5 bg-border mt-2 relative">
+                            <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                        )}
 
+                        {/* Level 3: Reportees under this manager */}
+                        {managerReports.length > 0 && (
+                          <div className="flex gap-4 mt-4 justify-center flex-wrap max-w-md">
+                            {managerReports.map((reportee, rIdx) => (
+                              <div key={reportee.id || rIdx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
+                                <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                                  {reportee.designation || "Team Member"}
+                                </span>
+                                <h5 className="font-heading font-bold text-xs mt-0.5">{reportee.name}</h5>
+                                <p className="text-[9px] text-muted-foreground">{reportee.department}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
 
               </div>

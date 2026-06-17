@@ -24,6 +24,7 @@ const employeeFormSchema = zod.object({
   bankName: zod.string().optional(),
   accountNo: zod.string().optional(),
   ifscCode: zod.string().optional(),
+  reportsTo: zod.string().optional(),
 });
 
 type EmployeeFormValues = zod.infer<typeof employeeFormSchema>;
@@ -35,6 +36,17 @@ export function EmployeeForm() {
   
   const { employees, addEmployee, updateEmployee } = useHrmsData();
   const employee = employees.find((e) => e.id === id);
+
+  // Build manager options (exclude self)
+  const managerOptions = [
+    { value: "", label: "No Manager (Reports to CEO / Top Leader)" },
+    ...employees
+      .filter((e) => e.id !== id)
+      .map((e) => ({
+        value: e.id,
+        label: `${e.name} (${e.designation} - ${e.department})`,
+      })),
+  ];
 
   const {
     register,
@@ -56,6 +68,7 @@ export function EmployeeForm() {
       bankName: "",
       accountNo: "",
       ifscCode: "",
+      reportsTo: "",
     },
   });
 
@@ -75,6 +88,7 @@ export function EmployeeForm() {
         bankName: employee.bankName || "",
         accountNo: employee.accountNo || "",
         ifscCode: employee.ifscCode || "",
+        reportsTo: employee.reportsTo || "",
       });
     }
   }, [isEditMode, employee, reset]);
@@ -197,6 +211,12 @@ export function EmployeeForm() {
               placeholder="e.g. Chicago HQ or Remote"
               error={errors.location?.message}
               {...register("location")}
+            />
+            <Select
+              label="Reporting Manager"
+              error={errors.reportsTo?.message}
+              options={managerOptions}
+              {...register("reportsTo")}
             />
           </CardContent>
         </Card>

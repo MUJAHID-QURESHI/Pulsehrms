@@ -78,6 +78,10 @@ const employeeSchema = new mongoose.Schema(
     ifscCode: {
       type: String,
     },
+    reportsTo: {
+      type: String,
+      default: "",
+    },
     documents: [docSchema],
     timeline: [timelineSchema],
   },

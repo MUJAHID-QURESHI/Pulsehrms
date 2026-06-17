@@ -58,6 +58,7 @@ export interface Employee {
   bankName?: string;
   accountNo?: string;
   ifscCode?: string;
+  reportsTo?: string;
   documents: EmployeeDoc[];
   timeline: TimelineEvent[];
 }

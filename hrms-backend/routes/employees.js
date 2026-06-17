@@ -52,6 +52,7 @@ router.post("/", protect, authorize("HR Admin"), async (req, res) => {
     bankName,
     accountNo,
     ifscCode,
+    reportsTo,
   } = req.body;
 
   try {
@@ -79,6 +80,7 @@ router.post("/", protect, authorize("HR Admin"), async (req, res) => {
       bankName,
       accountNo,
       ifscCode,
+      reportsTo: reportsTo || "",
       documents: [],
       timeline: [
         {

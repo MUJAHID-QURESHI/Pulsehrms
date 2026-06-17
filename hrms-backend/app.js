@@ -95,6 +95,7 @@ const employeeSchema = new mongoose.Schema(
     bankName: { type: String },
     accountNo: { type: String },
     ifscCode: { type: String },
+    reportsTo: { type: String, default: "" },
     documents: [docSchema],
     timeline: [timelineSchema],
   },
@@ -288,6 +289,7 @@ employeeRouter.post("/", protect, authorize("HR Admin"), async (req, res) => {
     bankName,
     accountNo,
     ifscCode,
+    reportsTo,
   } = req.body;
   try {
     const employeeExists = await Employee.findOne({ email });
@@ -311,6 +313,7 @@ employeeRouter.post("/", protect, authorize("HR Admin"), async (req, res) => {
       bankName,
       accountNo,
       ifscCode,
+      reportsTo: reportsTo || "",
       documents: [],
       timeline: [
         {

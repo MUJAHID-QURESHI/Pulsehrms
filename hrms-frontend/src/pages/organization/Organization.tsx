@@ -43,16 +43,16 @@ export function Organization() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="chart" className="w-full">
+      <Tabs defaultValue="chart" className="w-full overflow-hidden">
         
-        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl max-w-md">
-          <TabsTrigger value="chart" className="flex items-center gap-1.5 text-xs">
+        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl w-full flex overflow-x-auto whitespace-nowrap scrollbar-none max-w-full justify-start md:justify-center md:max-w-md shrink-0 gap-1">
+          <TabsTrigger value="chart" className="flex items-center gap-1.5 text-xs shrink-0">
             <GitMerge className="h-4 w-4 text-primary" /> Visual Org Chart
           </TabsTrigger>
-          <TabsTrigger value="depts" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="depts" className="flex items-center gap-1.5 text-xs shrink-0">
             <Building2 className="h-4 w-4 text-emerald-500" /> Departments
           </TabsTrigger>
-          <TabsTrigger value="locs" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="locs" className="flex items-center gap-1.5 text-xs shrink-0">
             <MapPin className="h-4 w-4 text-amber-500" /> Locations
           </TabsTrigger>
         </TabsList>
@@ -64,65 +64,67 @@ export function Organization() {
               <CardTitle>Reporting Hierarchy Tree</CardTitle>
               <CardDescription>Visual chart mapping reporting paths within PulseHRMS</CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center p-8 overflow-x-auto min-w-[700px]">
-              
-              {/* Root: CEO */}
-              <div className="flex flex-col items-center relative">
-                <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl border border-primary/20 shadow-md text-center w-52">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Chief Executive</span>
-                  <h4 className="font-heading font-bold text-sm mt-0.5">Elena Rostova</h4>
-                  <p className="text-[10px] text-slate-300">Executive Board</p>
-                </div>
-                {/* Vertical Connector */}
-                <div className="h-10 w-0.5 bg-border mt-2 relative">
-                  <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
-                </div>
-              </div>
-
-              {/* Level 2: Managers / Admin */}
-              <div className="flex justify-center gap-12 mt-4 relative w-full">
+            <CardContent className="w-full overflow-x-auto p-4 sm:p-8 scrollbar-thin">
+              <div className="flex flex-col items-center justify-center min-w-[760px] mx-auto pb-4">
                 
-                {/* Manager Column */}
-                <div className="flex flex-col items-center">
-                  <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Engineering Lead</span>
-                    <h4 className="font-heading font-bold text-sm mt-0.5">Marcus Sterling</h4>
-                    <p className="text-[10px] text-muted-foreground">Engineering Dept</p>
+                {/* Root: CEO */}
+                <div className="flex flex-col items-center relative">
+                  <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl border border-primary/20 shadow-md text-center w-52">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Chief Executive</span>
+                    <h4 className="font-heading font-bold text-sm mt-0.5">Elena Rostova</h4>
+                    <p className="text-[10px] text-slate-300">Executive Board</p>
                   </div>
                   {/* Vertical Connector */}
                   <div className="h-10 w-0.5 bg-border mt-2 relative">
                     <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
                   </div>
-
-                  {/* Level 3: Engineering Team Reportees */}
-                  <div className="flex gap-4 mt-4 justify-center">
-                    {[
-                      { name: "David Vance", role: "Software Engineer" },
-                      { name: "Anna Kovach", role: "UI Designer" },
-                      { name: "Jared Leto", role: "QA Engineer" },
-                    ].map((eng, idx) => (
-                      <div key={idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
-                        <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Developer</span>
-                        <h5 className="font-heading font-bold text-xs mt-0.5">{eng.name}</h5>
-                        <p className="text-[9px] text-muted-foreground">{eng.role}</p>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
-                {/* HR Admin Column (Adjacent node) */}
-                <div className="flex flex-col items-center">
-                  <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">HR Director</span>
-                    <h4 className="font-heading font-bold text-sm mt-0.5">Sarah Jenkins</h4>
-                    <p className="text-[10px] text-muted-foreground">Human Resources</p>
+                {/* Level 2: Managers / Admin */}
+                <div className="flex justify-center gap-12 mt-4 relative w-full">
+                  
+                  {/* Manager Column */}
+                  <div className="flex flex-col items-center">
+                    <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Engineering Lead</span>
+                      <h4 className="font-heading font-bold text-sm mt-0.5">Marcus Sterling</h4>
+                      <p className="text-[10px] text-muted-foreground">Engineering Dept</p>
+                    </div>
+                    {/* Vertical Connector */}
+                    <div className="h-10 w-0.5 bg-border mt-2 relative">
+                      <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
+                    </div>
+
+                    {/* Level 3: Engineering Team Reportees */}
+                    <div className="flex gap-4 mt-4 justify-center">
+                      {[
+                        { name: "David Vance", role: "Software Engineer" },
+                        { name: "Anna Kovach", role: "UI Designer" },
+                        { name: "Jared Leto", role: "QA Engineer" },
+                      ].map((eng, idx) => (
+                        <div key={idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
+                          <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Developer</span>
+                          <h5 className="font-heading font-bold text-xs mt-0.5">{eng.name}</h5>
+                          <p className="text-[9px] text-muted-foreground">{eng.role}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="h-6 w-0.5 bg-dashed border-l border-muted-foreground/30 mt-2" />
-                  <span className="text-[9px] text-muted-foreground italic mt-2">Dotted reporting to CEO</span>
+
+                  {/* HR Admin Column (Adjacent node) */}
+                  <div className="flex flex-col items-center">
+                    <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">HR Director</span>
+                      <h4 className="font-heading font-bold text-sm mt-0.5">Sarah Jenkins</h4>
+                      <p className="text-[10px] text-muted-foreground">Human Resources</p>
+                    </div>
+                    <div className="h-6 w-0.5 bg-dashed border-l border-muted-foreground/30 mt-2" />
+                    <span className="text-[9px] text-muted-foreground italic mt-2">Dotted reporting to CEO</span>
+                  </div>
+
                 </div>
 
               </div>
-
             </CardContent>
           </Card>
         </TabsContent>

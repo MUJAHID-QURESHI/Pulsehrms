@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { ArrowLeft, UserPlus, Save } from "lucide-react";
+import { ArrowLeft, UserPlus, Save, ChevronDown, User } from "lucide-react";
 
 // Schema for form validation using Zod
 const employeeFormSchema = zod.object({
@@ -52,6 +52,8 @@ export function EmployeeForm() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
@@ -71,7 +73,9 @@ export function EmployeeForm() {
       reportsTo: "",
     },
   });
-
+  const [isManagerDropdownOpen, setIsManagerDropdownOpen] = useState(false);
+  const currentManagerId = watch("reportsTo");
+  const currentManager = employees.find((e) => e.id === currentManagerId);
   // Load employee data if editing
   useEffect(() => {
     if (isEditMode && employee) {
@@ -212,12 +216,110 @@ export function EmployeeForm() {
               error={errors.location?.message}
               {...register("location")}
             />
-            <Select
-              label="Reporting Manager"
-              error={errors.reportsTo?.message}
-              options={managerOptions}
-              {...register("reportsTo")}
-            />
+            <div className="relative w-full flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-foreground/80 font-heading">
+                Reporting Manager
+              </label>
+              
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsManagerDropdownOpen(!isManagerDropdownOpen)}
+                  className="flex h-14 w-full items-center justify-between rounded-lg border border-input bg-card px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-150 cursor-pointer text-left"
+                >
+                  {currentManager ? (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={currentManager.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentManager.email}`}
+                        alt={currentManager.name}
+                        className="h-8 w-8 rounded-full border border-border object-cover"
+                      />
+                      <div>
+                        <p className="font-semibold text-foreground text-xs leading-normal">{currentManager.name}</p>
+                        <p className="text-[10px] text-muted-foreground leading-none">{currentManager.designation} ({currentManager.department})</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-border">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground text-xs leading-normal">No Manager</p>
+                        <p className="text-[10px] text-muted-foreground leading-none">Reports directly to CEO / Top Leader</p>
+                      </div>
+                    </div>
+                  )}
+                  <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isManagerDropdownOpen && (
+                  <>
+                    {/* Backdrop to close dropdown on click outside */}
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setIsManagerDropdownOpen(false)}
+                    />
+                    
+                    <div className="absolute left-0 right-0 mt-1.5 max-h-60 overflow-y-auto rounded-lg border border-border/80 bg-card p-1 shadow-lg z-40 animate-fade-in scrollbar-thin">
+                      
+                      {/* Option: No Manager */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setValue("reportsTo", "");
+                          setIsManagerDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2 text-xs rounded-md text-left transition-colors cursor-pointer hover:bg-muted/60 ${
+                          !currentManagerId ? "bg-primary/10 text-primary font-semibold" : "text-foreground"
+                        }`}
+                      >
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border border-border">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-xs leading-normal">No Manager</p>
+                          <p className="text-[9px] text-muted-foreground leading-none">Reports directly to CEO / Top Leader</p>
+                        </div>
+                      </button>
+
+                      {/* Dynamic Options: Employees list */}
+                      {employees
+                        .filter((e) => e.id !== id) // Exclude self if editing
+                        .map((emp) => (
+                          <button
+                            key={emp.id}
+                            type="button"
+                            onClick={() => {
+                              setValue("reportsTo", emp.id);
+                              setIsManagerDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2 text-xs rounded-md text-left mt-0.5 transition-colors cursor-pointer hover:bg-muted/60 ${
+                              currentManagerId === emp.id ? "bg-primary/10 text-primary font-semibold" : "text-foreground"
+                            }`}
+                          >
+                            <img
+                              src={emp.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${emp.email}`}
+                              alt={emp.name}
+                              className="h-8 w-8 rounded-full border border-border object-cover"
+                            />
+                            <div>
+                              <p className="font-bold text-xs leading-normal">{emp.name}</p>
+                              <p className="text-[9px] text-muted-foreground leading-none">{emp.designation} — {emp.department}</p>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              <input type="hidden" {...register("reportsTo")} />
+              {errors.reportsTo?.message && (
+                <p className="text-xs text-destructive font-medium animate-fade-in">{errors.reportsTo.message}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 

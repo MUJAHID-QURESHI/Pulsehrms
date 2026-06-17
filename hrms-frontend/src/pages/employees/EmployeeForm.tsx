@@ -176,7 +176,7 @@ export function EmployeeForm() {
         </Card>
 
         {/* Step 2: Employment details */}
-        <Card>
+        <Card className="overflow-visible">
           <CardHeader>
             <CardTitle>Employment & Role Assignment</CardTitle>
             <CardDescription>Role, department, and work placement details</CardDescription>

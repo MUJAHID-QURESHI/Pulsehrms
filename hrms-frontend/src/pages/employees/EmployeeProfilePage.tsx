@@ -198,15 +198,15 @@ export function EmployeeProfilePage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="personal" className="w-full">
+      <Tabs defaultValue="personal" className="w-full overflow-hidden">
         
-        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl max-w-3xl">
-          <TabsTrigger value="personal" className="flex items-center gap-1.5 text-xs"><User className="h-4 w-4" /> Personal info</TabsTrigger>
-          <TabsTrigger value="bank" className="flex items-center gap-1.5 text-xs"><CreditCard className="h-4 w-4" /> Bank details</TabsTrigger>
-          <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs"><FileCheck2 className="h-4 w-4" /> Documents</TabsTrigger>
-          <TabsTrigger value="timeline" className="flex items-center gap-1.5 text-xs"><Clock className="h-4 w-4" /> Timeline</TabsTrigger>
+        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl w-full flex overflow-x-auto whitespace-nowrap scrollbar-none max-w-full justify-start md:justify-center md:max-w-3xl shrink-0 gap-1">
+          <TabsTrigger value="personal" className="flex items-center gap-1.5 text-xs shrink-0"><User className="h-4 w-4" /> Personal info</TabsTrigger>
+          <TabsTrigger value="bank" className="flex items-center gap-1.5 text-xs shrink-0"><CreditCard className="h-4 w-4" /> Bank details</TabsTrigger>
+          <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs shrink-0"><FileCheck2 className="h-4 w-4" /> Documents</TabsTrigger>
+          <TabsTrigger value="timeline" className="flex items-center gap-1.5 text-xs shrink-0"><Clock className="h-4 w-4" /> Timeline</TabsTrigger>
           {isOwnProfile && (
-            <TabsTrigger value="security" className="flex items-center gap-1.5 text-xs"><Lock className="h-4 w-4" /> Security</TabsTrigger>
+            <TabsTrigger value="security" className="flex items-center gap-1.5 text-xs shrink-0"><Lock className="h-4 w-4" /> Security</TabsTrigger>
           )}
         </TabsList>
 

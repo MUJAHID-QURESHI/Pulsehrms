@@ -322,12 +322,12 @@ export function Reports() {
       </Card>
 
       {/* Main Report Selector Tabs */}
-      <Tabs defaultValue="headcount" onValueChange={setActiveReportTab} className="w-full">
+      <Tabs defaultValue="headcount" onValueChange={setActiveReportTab} className="w-full overflow-hidden">
         
-        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl max-w-md">
-          <TabsTrigger value="headcount" className="text-xs flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Headcount</TabsTrigger>
-          <TabsTrigger value="attendance" className="text-xs flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Attendance</TabsTrigger>
-          <TabsTrigger value="leaves" className="text-xs flex items-center gap-1"><CalendarCheck className="h-3.5 w-3.5" /> Leaves</TabsTrigger>
+        <TabsList className="bg-card/60 backdrop-blur-md p-1 border border-border/40 rounded-xl w-full flex overflow-x-auto whitespace-nowrap scrollbar-none max-w-full justify-start md:justify-center md:max-w-md shrink-0 gap-1">
+          <TabsTrigger value="headcount" className="text-xs flex items-center gap-1 shrink-0"><Users className="h-3.5 w-3.5" /> Headcount</TabsTrigger>
+          <TabsTrigger value="attendance" className="text-xs flex items-center gap-1 shrink-0"><Clock className="h-3.5 w-3.5" /> Attendance</TabsTrigger>
+          <TabsTrigger value="leaves" className="text-xs flex items-center gap-1 shrink-0"><CalendarCheck className="h-3.5 w-3.5" /> Leaves</TabsTrigger>
         </TabsList>
 
         {/* Headcount tab panel */}

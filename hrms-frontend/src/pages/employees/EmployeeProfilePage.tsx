@@ -216,14 +216,18 @@ export function EmployeeProfilePage() {
             
             {/* General details Card */}
             <Card className="md:col-span-2 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
                   <CardTitle>Contact & Personal Information</CardTitle>
                   <CardDescription>Details registered in payroll system</CardDescription>
                 </div>
                 {(isOwnProfile || isHrOrLeader) && !isEditingContact && (
-                  <Button variant="ghost" className="h-8 text-xs font-semibold" onClick={() => setIsEditingContact(true)}>
-                    Edit Details
+                  <Button 
+                    variant="outline" 
+                    className="h-8.5 px-3 text-xs font-semibold shrink-0 w-full sm:w-auto flex items-center justify-center gap-1.5 border-border" 
+                    onClick={() => setIsEditingContact(true)}
+                  >
+                    <User className="h-3.5 w-3.5 text-primary" /> Edit Details
                   </Button>
                 )}
               </CardHeader>
@@ -335,18 +339,18 @@ export function EmployeeProfilePage() {
         {/* Tab 3: Documents */}
         <TabsContent value="documents">
           <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1">
                 <CardTitle>Documents Locker</CardTitle>
                 <CardDescription>Legal contracts, certificates, and payroll documents</CardDescription>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-1 text-xs h-8.5 font-semibold border-border"
+                className="flex items-center justify-center gap-1.5 text-xs h-8.5 font-semibold border-border w-full sm:w-auto shrink-0"
                 onClick={() => setIsUploadOpen(true)}
               >
-                <Plus className="h-4 w-4" /> Upload Document
+                <Plus className="h-4 w-4 text-primary" /> Upload Document
               </Button>
             </CardHeader>
             <CardContent>

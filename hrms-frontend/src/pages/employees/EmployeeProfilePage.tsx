@@ -353,19 +353,19 @@ export function EmployeeProfilePage() {
               {employee.documents && employee.documents.length > 0 ? (
                 <div className="divide-y divide-border/40">
                   {employee.documents.map((doc, index) => (
-                    <div key={doc.id || (doc as any)._id || index} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                      <div className="flex items-start gap-3">
+                    <div key={doc.id || (doc as any)._id || index} className="flex items-center justify-between py-3 first:pt-0 last:pb-0 gap-4">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="h-9 w-9 rounded bg-primary/10 text-primary flex items-center justify-center font-heading font-extrabold text-xs shrink-0">
                           {doc.name.split(".").pop()?.toUpperCase() || "PDF"}
                         </div>
-                        <div>
-                          <h4 className="text-sm font-semibold text-foreground leading-none">{doc.name}</h4>
-                          <span className="text-[10px] text-muted-foreground mt-1 block">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-semibold text-foreground leading-none truncate" title={doc.name}>{doc.name}</h4>
+                          <span className="text-[10px] text-muted-foreground mt-1.5 block truncate">
                             {doc.category} • Uploaded on {doc.uploadedAt} • {doc.size}
                           </span>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <a
                           href="#"
                           onClick={(e) => { e.preventDefault(); alert(`Downloading simulated document: ${doc.name}`); }}

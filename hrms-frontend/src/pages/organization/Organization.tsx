@@ -16,14 +16,49 @@ import { useHrmsData } from "@/hooks/useHrmsData";
 export function Organization() {
   const { employees } = useHrmsData();
 
-  // Aggregate department counts
+  // Find top leader (e.g. CEO or first HR Admin in database)
+  const topLeader = employees.find(e => 
+    e.designation.toLowerCase().includes("ceo") || 
+    e.designation.toLowerCase().includes("chief") || 
+    e.designation.toLowerCase().includes("president")
+  ) || employees.find(e => e.role === "HR Admin") || employees[0];
+
+  // Find engineering lead (Marcus Sterling by default)
+  const engLead = employees.find(e => 
+    e.department === "Engineering" && 
+    (e.role === "Manager" || e.designation.toLowerCase().includes("manager") || e.designation.toLowerCase().includes("lead"))
+  );
+
+  // Find engineering reportees (like David Vance, and user-registered ones like Mujahid)
+  const engReportees = employees.filter(e => 
+    e.department === "Engineering" && 
+    e.id !== engLead?.id &&
+    e.id !== topLeader?.id
+  );
+
+  // Find HR Director/Admin (Sarah Jenkins or any other HR Admin excluding top leader)
+  const hrDirector = employees.find(e => 
+    e.id !== topLeader?.id && 
+    (e.role === "HR Admin" || e.department === "Human Resources")
+  ) || topLeader;
+
+  // Find other department reportees who report directly to CEO
+  const otherReportees = employees.filter(e => 
+    e.id !== topLeader?.id && 
+    e.id !== engLead?.id && 
+    e.id !== hrDirector?.id && 
+    e.department !== "Engineering" &&
+    e.department !== "Human Resources"
+  );
+
+  // Aggregate department counts for Departments tab
   const deptSummary = Array.from(new Set(employees.map((e) => e.department))).map((dept) => {
     const members = employees.filter((e) => e.department === dept);
     const lead = employees.find((e) => e.department === dept && (e.role === "Manager" || e.role === "HR Admin"));
     return { name: dept, count: members.length, lead: lead ? lead.name : "N/A" };
   });
 
-  // Aggregate location counts
+  // Aggregate location counts for Locations tab
   const locSummary = Array.from(new Set(employees.map((e) => e.location))).map((loc) => {
     const members = employees.filter((e) => e.location === loc);
     return { name: loc, count: members.length };
@@ -67,60 +102,100 @@ export function Organization() {
             <CardContent className="w-full overflow-x-auto p-4 sm:p-8 scrollbar-thin">
               <div className="flex flex-col items-center justify-center min-w-[760px] mx-auto pb-4">
                 
-                {/* Root: CEO */}
-                <div className="flex flex-col items-center relative">
-                  <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl border border-primary/20 shadow-md text-center w-52">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-primary">Chief Executive</span>
-                    <h4 className="font-heading font-bold text-sm mt-0.5">Elena Rostova</h4>
-                    <p className="text-[10px] text-slate-300">Executive Board</p>
-                  </div>
-                  {/* Vertical Connector */}
-                  <div className="h-10 w-0.5 bg-border mt-2 relative">
-                    <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
-                  </div>
-                </div>
-
-                {/* Level 2: Managers / Admin */}
-                <div className="flex justify-center gap-12 mt-4 relative w-full">
-                  
-                  {/* Manager Column */}
-                  <div className="flex flex-col items-center">
-                    <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Engineering Lead</span>
-                      <h4 className="font-heading font-bold text-sm mt-0.5">Marcus Sterling</h4>
-                      <p className="text-[10px] text-muted-foreground">Engineering Dept</p>
+                {/* Root: Top Leader */}
+                {topLeader && (
+                  <div className="flex flex-col items-center relative">
+                    <div className="bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-xl border border-primary/20 shadow-md text-center w-52">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-primary">
+                        {topLeader.designation || "Chief Executive"}
+                      </span>
+                      <h4 className="font-heading font-bold text-sm mt-0.5">{topLeader.name}</h4>
+                      <p className="text-[10px] text-slate-300">{topLeader.department || "Executive Board"}</p>
                     </div>
                     {/* Vertical Connector */}
                     <div className="h-10 w-0.5 bg-border mt-2 relative">
                       <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
                     </div>
-
-                    {/* Level 3: Engineering Team Reportees */}
-                    <div className="flex gap-4 mt-4 justify-center">
-                      {[
-                        { name: "David Vance", role: "Software Engineer" },
-                        { name: "Anna Kovach", role: "UI Designer" },
-                        { name: "Jared Leto", role: "QA Engineer" },
-                      ].map((eng, idx) => (
-                        <div key={idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Developer</span>
-                          <h5 className="font-heading font-bold text-xs mt-0.5">{eng.name}</h5>
-                          <p className="text-[9px] text-muted-foreground">{eng.role}</p>
-                        </div>
-                      ))}
-                    </div>
                   </div>
+                )}
+
+                {/* Level 2: Managers / Admin */}
+                <div className="flex justify-center gap-12 mt-4 relative w-full">
+                  
+                  {/* Manager Column */}
+                  {engLead && (
+                    <div className="flex flex-col items-center">
+                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                          {engLead.designation || "Engineering Lead"}
+                        </span>
+                        <h4 className="font-heading font-bold text-sm mt-0.5">{engLead.name}</h4>
+                        <p className="text-[10px] text-muted-foreground">{engLead.department}</p>
+                      </div>
+                      {/* Vertical Connector */}
+                      {engReportees.length > 0 && (
+                        <div className="h-10 w-0.5 bg-border mt-2 relative">
+                          <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
+                        </div>
+                      )}
+
+                      {/* Level 3: Engineering Team Reportees */}
+                      {engReportees.length > 0 && (
+                        <div className="flex gap-4 mt-4 justify-center flex-wrap max-w-md">
+                          {engReportees.map((eng, idx) => (
+                            <div key={eng.id || idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
+                              <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                                {eng.designation || "Developer"}
+                              </span>
+                              <h5 className="font-heading font-bold text-xs mt-0.5">{eng.name}</h5>
+                              <p className="text-[9px] text-muted-foreground">{eng.department}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* HR Admin Column (Adjacent node) */}
-                  <div className="flex flex-col items-center">
-                    <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">HR Director</span>
-                      <h4 className="font-heading font-bold text-sm mt-0.5">Sarah Jenkins</h4>
-                      <p className="text-[10px] text-muted-foreground">Human Resources</p>
+                  {hrDirector && hrDirector.id !== topLeader?.id && (
+                    <div className="flex flex-col items-center">
+                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                          {hrDirector.designation || "HR Director"}
+                        </span>
+                        <h4 className="font-heading font-bold text-sm mt-0.5">{hrDirector.name}</h4>
+                        <p className="text-[10px] text-muted-foreground">{hrDirector.department}</p>
+                      </div>
+                      <div className="h-6 w-0.5 bg-dashed border-l border-muted-foreground/30 mt-2" />
+                      <span className="text-[9px] text-muted-foreground italic mt-2">Dotted reporting to CEO</span>
                     </div>
-                    <div className="h-6 w-0.5 bg-dashed border-l border-muted-foreground/30 mt-2" />
-                    <span className="text-[9px] text-muted-foreground italic mt-2">Dotted reporting to CEO</span>
-                  </div>
+                  )}
+
+                  {/* Other Departments Column */}
+                  {otherReportees.length > 0 && (
+                    <div className="flex flex-col items-center">
+                      <div className="bg-card p-4 rounded-xl border border-border/60 shadow-sm text-center w-52 hover:border-primary/30 transition-colors">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Other Personnel</span>
+                        <h4 className="font-heading font-bold text-sm mt-0.5">Direct Reports</h4>
+                        <p className="text-[10px] text-muted-foreground">General Operations</p>
+                      </div>
+                      {/* Vertical Connector */}
+                      <div className="h-10 w-0.5 bg-border mt-2 relative">
+                        <ChevronDown className="h-4 w-4 absolute -bottom-2 -left-1.5 text-muted-foreground" />
+                      </div>
+                      <div className="flex gap-4 mt-4 justify-center flex-wrap max-w-md">
+                        {otherReportees.map((emp, idx) => (
+                          <div key={emp.id || idx} className="bg-muted/30 p-3 rounded-lg border border-border/40 text-center w-40 hover:bg-muted/50 transition-colors">
+                            <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                              {emp.designation}
+                            </span>
+                            <h5 className="font-heading font-bold text-xs mt-0.5">{emp.name}</h5>
+                            <p className="text-[9px] text-muted-foreground">{emp.department}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                 </div>
 
